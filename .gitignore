@@ -99,3 +99,14 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# data
+input/
+
+src/Untitled\.ipynb
+
+*.csv
+
+*.h52
+
+*.h5
