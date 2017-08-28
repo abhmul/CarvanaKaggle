@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from keras.preprocessing.image import load_img
 from data import construct_img_path
@@ -54,11 +55,23 @@ def plot_tiles(arrays, grid_shape, figsize=None, ion=False):
         plt.show()
 
 
-def plot_img_mask_tiled(imgs, masks, grid_shape, figsize=None, ion=False):
+def infer_grid_shape(tiles):
+    s2 = int(math.ceil(math.sqrt(tiles)))
+    if s2 % 2 != 0:
+        s2 -= 1
+    s1 = int(math.ceil(tiles / s2))
+    if s2 < s1:
+        return (s2, s1)
+    return (s1, s2)
+
+
+def plot_img_mask_tiled(imgs, masks, grid_shape=None, figsize=None, ion=False):
     assert imgs.shape[:-1] == masks.shape, "Image and masks shapes do not match!"
     merged = np.empty((imgs.shape[0] * 2,) + imgs.shape[1:])
     merged[:-1:2] = imgs
     merged[1::2] = masks[..., np.newaxis]
+    if grid_shape is None:
+        grid_shape = infer_grid_shape(merged.shape[0])
     plot_tiles(merged, grid_shape, figsize=figsize, ion=ion)
 
 

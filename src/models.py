@@ -20,16 +20,14 @@ def dice_coef(y_true, y_pred):
 
 def dice_loss(y_true, y_pred):
     smooth = 1.
-    y_true = K.flatten(y_true)
-    y_pred = K.flatten(y_pred)
-
-    isct = K.sum(y_true * y_pred)
-
-    return 1 - (2 * isct + smooth) / (K.sum(y_true) + K.sum(y_pred) + smooth)
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 
 def log_dice_loss(y_true, y_pred):
-    return -K.log(-(dice_loss(y_true, y_pred) - 1))
+    return -K.log(dice_loss(y_true, y_pred))
 
 
 def jacard_loss(y_true, y_pred):
@@ -38,14 +36,17 @@ def jacard_loss(y_true, y_pred):
     y_pred = K.flatten(y_pred)
     isct_norm = tf.norm(y_true * y_pred)
 
-    return 1 - (isct_norm / (K.dot(y_true, y_true) + K.dot(y_pred, y_pred) - isct_norm))
+    y_true_dot = K.dot(K.expand_dims(y_true, axis=0), K.expand_dims(y_true, axis=-1))[0, 0]
+    y_pred_dot = K.dot(K.expand_dims(y_pred, axis=0), K.expand_dims(y_pred, axis=-1))[0, 0]
+
+    return 1 - (isct_norm / (y_true_dot + y_pred_dot - isct_norm))
 
 
 def bce_dice_loss(y_true, y_pred):
-    return 0.5 * binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred) - 1
+    return binary_crossentropy(y_true, y_pred) + (1 - dice_loss(y_true, y_pred))
 
 
-def simple_model(img_size, optimizer=None, loss=dice_loss, train=True):
+def simple_model(img_size, optimizer=None, loss=bce_dice_loss, train=True):
     input_layer = Input(img_size + (3,))
     x = BatchNormalization()(input_layer)
 
@@ -104,7 +105,7 @@ def up(input_layer, residual, filters):
     return conv2
 
 
-def u_net_small(img_size, filters=32, optimizer=None, loss=dice_loss, train=True):
+def u_net_small(img_size, filters=32, optimizer=None, loss=bce_dice_loss, train=True):
     # Make a custom U-nets implementation.
     input_layer = Input(img_size + (3,))
     layers = [input_layer]
@@ -136,7 +137,7 @@ def u_net_small(img_size, filters=32, optimizer=None, loss=dice_loss, train=True
     return model
 
 
-def u_net_big(img_size, filters=32, optimizer=None, loss=dice_loss, train=True):
+def u_net_big(img_size, filters=32, optimizer=None, loss=bce_dice_loss, train=True):
     # Make a custom U-nets implementation.
     input_layer = Input(img_size + (3,))
     layers = [input_layer]
@@ -182,7 +183,7 @@ def u_net_big(img_size, filters=32, optimizer=None, loss=dice_loss, train=True):
     return model
 
 
-def u_net(img_size, down_layers, filters=8, optimizer=None, loss=dice_loss, train=True):
+def u_net(img_size, down_layers, filters=8, optimizer=None, loss=bce_dice_loss, train=True):
     """down samples dimensions by 2^(down_layers-1)"""
     # Make a custom U-nets implementation.
     input_layer = Input(img_size + (3,))
@@ -210,14 +211,22 @@ def u_net(img_size, down_layers, filters=8, optimizer=None, loss=dice_loss, trai
     model.summary()
     if train:
         print("Training with ", loss)
-        model.compile(optimizer, loss=loss, metrics=[dice_coef])
+        model.compile(optimizer, loss=loss, metrics=[dice_loss, dice_coef])
 
     return model
 
 
-def u_net_big_img(img_size=(320, 480), filters=8, optimizer=None, loss=dice_loss, train=True):
+def u_net_big_img(img_size=(320, 480), filters=8, optimizer=None, loss=bce_dice_loss, train=True):
     return u_net(img_size, 6, filters=filters, optimizer=optimizer, loss=loss, train=train)
 
 
-def u_net_full_img(img_size=(1280, 1920), filters=2, optimizer=None, loss=dice_loss, train=True):
+def u_net_full_img(img_size=(1280, 1920), filters=2, optimizer=None, loss=bce_dice_loss, train=True):
+    return u_net(img_size, 8, filters=filters, optimizer=optimizer, loss=loss, train=train)
+
+
+def u_net_512(img_size=(512, 512), filters=8, optimizer=None, loss=bce_dice_loss, train=True):
+    return u_net(img_size, 7, filters=filters, optimizer=optimizer, loss=loss, train=train)
+
+
+def u_net_1024(img_size=(1024, 1024), filters=8, optimizer=None, loss=bce_dice_loss, train=True):
     return u_net(img_size, 8, filters=filters, optimizer=optimizer, loss=loss, train=train)

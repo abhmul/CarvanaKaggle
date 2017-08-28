@@ -1,0 +1,32 @@
+No Aug
+
+UNET 320x480 - 0.9899
+
+Augmentation
+WR - 0.3
+HR - 0.3
+RR - 30deg
+HF - True
+
+UNET 320x480 - 
+Epoch 1236 - 0.99337
+NOTE: With bug of random transform being same for entire batch
+
+UNET 1024
+WR - 0.3
+HR - 0.3
+RR - 30deg
+HF - True
+
+Epoch 27 - 0.9941
+
+
+
+TODO:
+- Rewrite code to run from a single command line?
+- Setup to run on a Google Cloud instance, or FloydHub
+- Investigate other architectures for segmentation
+- Setup for kfold
+
+ 
+

@@ -158,6 +158,29 @@ class FullCarDataset(pyjet.Dataset):
             return batch_img, batch_mask
         return batch_img, batch_long_ids
 
+    def validation_split(self, split=0.2, shuffle=True, seed=None):
+        split_ind = int(split * len(self))
+        val_split = slice(split_ind)
+        train_split = slice(split_ind, None)
+        if shuffle:
+            if seed is not None:
+                np.random.seed(seed)
+            indicies = np.random.permutation(len(self))
+            train_split = indicies[train_split]
+            val_split = indicies[val_split]
+
+        # Create the split datasets
+        train_long_ids = self.long_ids[train_split]
+        train_data = FullCarDataset(base_dir=self.base_dir, mask_dir=self.mask_dir,
+                                    long_ids=train_long_ids, metadata=self.metadata,
+                                    img_size=self.img_size, resize=self.resize)
+        val_long_ids = self.long_ids[val_split]
+        val_data = FullCarDataset(base_dir=self.base_dir, mask_dir=self.mask_dir,
+                                  long_ids=val_long_ids, metadata=self.metadata,
+                                  img_size=self.img_size, resize=self.resize)
+
+        return train_data, val_data
+
 
 class CarDataset(FullCarDataset):
 

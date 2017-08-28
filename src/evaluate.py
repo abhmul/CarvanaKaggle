@@ -11,7 +11,7 @@ from keras.preprocessing.image import load_img
 import pyjet.data as pyjet
 from data import FullCarDataset
 import rle
-from models import u_net_full_img as model_func
+from models import u_net_512 as model_func
 from models import MODEL_FILE
 from pyjet.training import GeneratorEnqueuer
 
@@ -20,12 +20,14 @@ TEST_DIR = "../input/test/"
 METADATA_PATH = "../input/metadata.csv"
 SUBMISSION_PATH = "../submissions/"
 MODEL_FILE = MODEL_FILE.format(model_func.__name__)
+# MODEL_FILE = "../models/{name}-{loss}.h5".format(
+#     name=model_func.__name__, loss="augmentation")
 
 # Script stuff
 ORIG_IMGSIZE = (1918, 1280)
-IMGSIZE = (1280, 1920)
-RESIZE = False
-BATCH_SIZE = 8
+IMGSIZE = (512, 512)
+RESIZE = True
+BATCH_SIZE = 16
 SEED = 1234
 np.random.seed(SEED)
 
@@ -108,17 +110,17 @@ def create_submission(model, datagen, orig_imgsize=(1918, 1280), resize=False, s
 
 # Load the test Dataset
 test_dataset = FullCarDataset(
-    base_dir=TEST_DIR, metadata_path=METADATA_PATH, img_size=IMGSIZE, resize=False)
+    base_dir=TEST_DIR, metadata_path=METADATA_PATH, img_size=IMGSIZE, resize=RESIZE)
 print("Test Dataset: ", len(test_dataset), " samples")
 # Turn it into a generator
 test_gen = pyjet.DatasetGenerator(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 print("Test Steps: ", test_gen.steps_per_epoch, " steps")
 test_gen = GeneratorEnqueuer(test_gen)
-test_gen.start(max_q_size=2)
+test_gen.start(max_q_size=3)
 
 # Create the model
 model = model_func(test_dataset.img_size, train=False)
 model.load_weights(MODEL_FILE)
 
 # Create the submission
-create_submission(model, test_gen, orig_imgsize=ORIG_IMGSIZE)
+create_submission(model, test_gen, orig_imgsize=ORIG_IMGSIZE, resize=RESIZE)
