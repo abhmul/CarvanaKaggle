@@ -70,7 +70,7 @@ parser.add_argument('--train_verbosity', type=int, default=1,
                     choices=[0, 1, 2], help="Verbosity to use for training the model.")
 parser.add_argument('-q', '--max_q_size', type=int, default=3,
                     help="Size of data generator queue for asynchronous generation.")
-parser.add_argument('--initial_epoch', type=int, help="Epoch to start training from.")
+parser.add_argument('--initial_epoch', type=int, default=0, help="Epoch to start training from.")
 # Debug settings
 parser.add_argument('-d', '--debug', action='store_true', help="Runs the script in debug mode")
 
