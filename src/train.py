@@ -6,7 +6,6 @@ import pyjet.data as pyjet
 from keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 
-from plotter_callback import Plotter
 from data import CarDataset, FullCarDataset
 from models import u_net_1024 as model_func
 
@@ -140,6 +139,7 @@ if __name__ == '__main__':
                                   patience=4, verbose=1, epsilon=1e-4, mode='max')
     callbacks = [best_model, reduce_lr]
     if args.plotter:
+        from plotter_callback import Plotter
         # This will plot the losses while training
         plotter = Plotter(scale='log')
         callbacks.append(plotter)
