@@ -42,6 +42,9 @@ parser.add_argument('-s', '--seed', type=int, default=6379,
                     help="Seed for the random number generator (used for reproducibility)")
 parser.add_argument('--plotter', action='store_true',
                     help="Will plot the loss and val loss during training.")
+# Model Settings
+parser.add_argument('--filters', type=int, default=4,
+                    help="Number of filters to start model with.")
 # Augmentation Settings
 parser.add_argument('--no_augmentation', action='store_true',
                     help="Turns of input augmentation during training")
@@ -145,7 +148,7 @@ if __name__ == '__main__':
         callbacks.append(plotter)
 
     # Create the model and fit it
-    model = model_func(car_dataset.img_size, optimizer=optimizer)
+    model = model_func(car_dataset.img_size, filters=args.filters, optimizer=optimizer)
     # Load the initialization weights if given
     if args.load_weights:
         model.load_weights(args.load_weights)

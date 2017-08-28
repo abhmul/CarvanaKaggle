@@ -228,5 +228,5 @@ def u_net_512(img_size=(512, 512), filters=8, optimizer=None, loss=bce_dice_loss
     return u_net(img_size, 7, filters=filters, optimizer=optimizer, loss=loss, train=train)
 
 
-def u_net_1024(img_size=(1024, 1024), filters=8, optimizer=None, loss=bce_dice_loss, train=True):
+def u_net_1024(img_size=(1024, 1024), filters=4, optimizer=None, loss=bce_dice_loss, train=True):
     return u_net(img_size, 8, filters=filters, optimizer=optimizer, loss=loss, train=train)
